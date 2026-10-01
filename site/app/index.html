@@ -124,6 +124,15 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 var(--
 .tab-btn svg{width:20px;height:20px}
 .tab-btn.on{color:var(--redt)}
 :root[data-os="android"] .tab-btn.on svg{background:rgba(200,55,45,.15);border-radius:999px;padding:1px 12px}
+
+/* Install PWA Floating Button */
+.install-fab{position:fixed;bottom:calc(24px + var(--safe-bottom));right:24px;z-index:1000;display:none;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:none}
+.install-fab.visible{display:flex;pointer-events:auto}
+.install-main-btn{background:var(--red);color:#fff;padding:14px 20px;border-radius:50px;font-size:14px;font-weight:800;box-shadow:0 8px 24px rgba(200,55,45,0.5);display:flex;align-items:center;gap:8px;cursor:pointer;border:none;animation:pulse 2s infinite;pointer-events:auto}
+.install-main-btn:hover{background:#b02e25}
+@keyframes pulse{0%,100%{box-shadow:0 8px 24px rgba(200,55,45,0.5)}50%{box-shadow:0 8px 32px rgba(200,55,45,0.7)}}
+.install-hint{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:11px;color:var(--mut);max-width:180px;text-align:right;box-shadow:0 4px 16px rgba(0,0,0,0.15);pointer-events:auto}
+.install-hint b{color:var(--gold);display:block;margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -508,6 +517,15 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 var(--
   </nav>
 </div>
 
+<!-- Install PWA Floating Button -->
+<div class="install-fab" id="installFab">
+  <div class="install-hint" id="installHint"><b>Install MESHLiNE</b>Tap to add to home screen</div>
+  <button class="install-main-btn" id="installBtn" onclick="installPwa()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Install App
+  </button>
+</div>
+
 <script src="mesh-engine.js"></script>
 <script>
 // Platform & Theme Switching
@@ -737,6 +755,55 @@ updateRescuerList();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(console.error);
 }
+
+// PWA Install Prompt Logic
+let deferredPrompt = null;
+const installFab = document.getElementById('installFab');
+const installBtn = document.getElementById('installBtn');
+const installHint = document.getElementById('installHint');
+
+// Listen for the beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installFab.classList.add('visible');
+  installHint.innerHTML = '<b>Install MESHLiNE</b>Tap to add to home screen — works offline!';
+});
+
+// Button click handler
+async function installPwa() {
+  if (!deferredPrompt) {
+    // Already installed or not supported
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      installHint.innerHTML = '<b>Already Installed</b>MESHLiNE is on your home screen';
+      installBtn.style.display = 'none';
+    }
+    return;
+  }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    installHint.innerHTML = '<b>Installed!</b>MESHLiNE is now on your home screen';
+    installBtn.style.display = 'none';
+  } else {
+    installHint.innerHTML = '<b>Not installed</b>You can try again anytime';
+  }
+  deferredPrompt = null;
+  setTimeout(() => installFab.classList.remove('visible'), 5000);
+}
+
+// Detect if already installed (standalone mode)
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+  installFab.classList.remove('visible');
+}
+
+// Show after 15 seconds if not installed (engagement heuristic)
+setTimeout(() => {
+  if (!window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone) {
+    installFab.classList.add('visible');
+    installHint.innerHTML = '<b>Install MESHLiNE</b>Add to home screen for offline emergency access';
+  }
+}, 15000);
 </script>
 </body>
 </html>
