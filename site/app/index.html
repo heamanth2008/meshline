@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en" data-os="ios">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0F1E33">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>MESHLiNE – Offline Emergency Mesh</title>
+<link rel="manifest" href="manifest.json">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F3EEE3;--card:#FFFDF8;--ink:#14213A;--mut:#5E6A80;--line:#E2D9C6;--gold:#B8893B;
+  --red:#C8372D;--redt:#C8372D;--grn:#2F7D5B;--ok:#2F7D5B;--vizb:#5B7FA6;--vizr:#B4655F;
+  --r:20px;--rc:12px;--b:16px;--ff:-apple-system,"SF Pro Text","Helvetica Neue",Roboto,sans-serif;
+  --safe-top:env(safe-area-inset-top, 0px);
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0A1424;--card:#13233B;--ink:#EEE7D6;--mut:#9BA8BE;--line:#243652;--redt:#FF8F85;--ok:#7FC8A9}
+}
+:root[data-theme="dark"]{--bg:#0A1424;--card:#13233B;--ink:#EEE7D6;--mut:#9BA8BE;--line:#243652;--redt:#FF8F85;--ok:#7FC8A9}
+:root[data-os="android"]{--r:26px;--rc:16px;--b:999px;--ff:Roboto,"Google Sans","Segoe UI",sans-serif}
+
+html,body{height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 var(--ff);overflow:hidden}
+#app{height:100%;display:flex;flex-direction:column;max-width:540px;margin:0 auto;background:var(--card);box-shadow:0 0 40px rgba(0,0,0,0.15)}
+
+/* Platform / Theme switcher top pill for instant evaluation */
+.top-control-bar{display:flex;justify-content:space-between;align-items:center;padding:calc(6px + var(--safe-top)) 14px 4px;background:var(--bg);border-bottom:1px solid var(--line);font-size:11px}
+.top-btn-group{display:flex;gap:4px}
+.top-btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;cursor:pointer}
+.top-btn.on{background:var(--ink);color:var(--bg)}
+
+/* App Header */
+.header{padding:10px 16px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);background:var(--card)}
+.logo-title{font-size:19px;font-weight:800;letter-spacing:.05em;color:var(--ink)}
+.header-chips{display:flex;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);font-size:10.5px;font-weight:600;color:var(--mut)}
+.chip.ok{color:var(--ok);border-color:var(--ok)}
+.chip.uv{color:var(--gold);border-style:dashed}
+
+/* View Container */
+.view-container{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.view{display:none;flex-direction:column;gap:12px;height:100%}
+.view.active{display:flex}
+
+.k{font:700 10.5px var(--ff);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.h{font:800 24px/1.15 var(--ff);margin-top:2px}
+.sub{color:var(--mut);font-size:12.5px}
+
+/* Radar & Breathing SOS */
+.radar-box{position:relative;width:200px;height:200px;margin:8px auto;border-radius:50%;display:grid;place-items:center;background:repeating-radial-gradient(circle,transparent 0 22px,var(--line) 22px 23px),radial-gradient(circle,rgba(200,55,45,.12),transparent 70%)}
+.radar-box .dot{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px rgba(184,137,59,.25)}
+.btn-sos{width:125px;height:125px;border-radius:50%;border:0;color:#fff;font:800 30px var(--ff);letter-spacing:2px;background:radial-gradient(circle at 35% 30%,#E8665A,#C8372D 60%,#8E1F18);box-shadow:0 8px 24px rgba(200,55,45,.5),inset 0 0 0 4px rgba(255,255,255,.2);cursor:pointer;animation:breathe 4s infinite ease-in-out}
+.btn-sos small{display:block;font:600 10px var(--ff);letter-spacing:.05em}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+
+/* Buttons & Inputs */
+.btn{border:0;border-radius:var(--b);padding:13px;font:700 14px var(--ff);background:var(--ink);color:var(--card);width:100%;cursor:pointer;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.btn.r{background:var(--red);color:#fff}
+.btn.s{background:transparent;border:1px solid var(--line);color:inherit}
+.btn-group{display:flex;gap:8px}
+
+.seg{display:flex;border:1px solid var(--line);border-radius:var(--b);overflow:hidden}
+.seg button{flex:1;border:0;background:transparent;color:var(--mut);padding:9px 0;font:700 12px var(--ff);cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--card)}
+.seg button.cr.on{background:var(--red);color:#fff}
+
+.triage-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.triage-btn{border:1px solid var(--line);border-radius:var(--rc);padding:12px 4px;text-align:center;font-weight:700;font-size:11.5px;cursor:pointer;background:var(--card);color:var(--ink)}
+.triage-btn svg{display:block;margin:0 auto 4px}
+.triage-btn.on{border-color:var(--red);background:rgba(200,55,45,.12);color:var(--redt)}
+
+.stepper{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:var(--rc);padding:7px 14px;font-weight:700;font-size:17px}
+.stepper span{cursor:pointer;padding:2px 12px;font-size:20px}
+
+/* Timeline */
+.timeline{display:flex;flex-direction:column;gap:11px;padding:4px 0}
+.timeline-item{position:relative;padding-left:26px;font-weight:700;font-size:13px}
+.timeline-item:before{content:"";position:absolute;left:4px;top:4px;width:11px;height:11px;border-radius:50%;background:var(--line)}
+.timeline-item:after{content:"";position:absolute;left:9px;top:18px;bottom:-10px;width:2px;background:var(--line)}
+.timeline-item:last-child:after{display:none}
+.timeline-item.done:before,.timeline-item.done:after{background:var(--ok)}
+.timeline-item.active:before{background:var(--gold);box-shadow:0 0 0 5px rgba(184,137,59,.25)}
+.timeline-item small{display:block;font-weight:400;color:var(--mut);font-size:11px}
+
+/* Incoming SOS Overlay (Full-screen Screen 6 / 6b) */
+.incoming-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(#7E1913,#C8372D);color:#fff;z-index:9999;flex-direction:column;padding:calc(20px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));justify-content:space-between}
+.incoming-modal.active{display:flex}
+.compass-ring{width:125px;height:125px;margin:10px auto;border-radius:50%;border:2px solid rgba(255,255,255,.55);display:grid;place-items:center;font-size:52px}
+.distance-big{font:800 42px var(--ff);text-align:center}
+
+/* Rescuer Card */
+.res-card{border:1px solid var(--line);border-radius:var(--rc);padding:11px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.res-score{flex:0 0 38px;height:38px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;display:grid;place-items:center;font-size:14px}
+.res-score.m{background:var(--gold)}.res-score.l{background:var(--ok)}
+
+/* Chat Bubbles */
+.chat-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-right:2px}
+.bub{border:1px solid var(--line);border-radius:var(--rc);padding:8px 11px;font-size:12.5px;max-width:85%}
+.bub.me{background:var(--ink);color:var(--card);align-self:flex-end;margin-left:30px}
+.bub small{display:block;color:var(--mut);font-size:10.5px;margin-top:3px}
+.bub.me small{color:var(--line)}
+
+/* Diagnostics KP Grid */
+.kp-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.kp-card{border:1px solid var(--line);border-radius:var(--rc);padding:10px 12px;font-size:11.5px;color:var(--mut)}
+.kp-card b{display:block;font-size:24px;color:var(--ink);font-weight:800}
+.kp-card.err b{color:var(--redt)}
+
+/* Hop Histogram */
+.bars{display:flex;align-items:flex-end;gap:5px;height:55px;margin-top:4px}
+.bars i{flex:1;background:var(--gold);border-radius:3px 3px 0 0}
+
+/* List view cards for onboarding & settings */
+.ls{display:grid;gap:8px;font-weight:600;font-size:13px}
+.ls > div{border:1px solid var(--line);border-radius:var(--rc);padding:10px 12px}
+.ls small{display:block;font-weight:400;color:var(--mut);font-size:11px}
+
+/* Tabs */
+.tabs{padding:6px 4px calc(6px + var(--safe-bottom));border-top:1px solid var(--line);display:flex;justify-content:space-around;background:var(--card)}
+.tab-btn{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;font-size:10.5px;font-weight:600;color:var(--mut);gap:2px;cursor:pointer}
+.tab-btn svg{width:20px;height:20px}
+.tab-btn.on{color:var(--redt)}
+:root[data-os="android"] .tab-btn.on svg{background:rgba(200,55,45,.15);border-radius:999px;padding:1px 12px}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Top Switcher Bar (Platform & Dark/Light mode) -->
+  <div class="top-control-bar">
+    <div class="top-btn-group">
+      <span>OS:</span>
+      <button class="top-btn on" id="btnOsIos" onclick="setOs('ios')">iOS</button>
+      <button class="top-btn" id="btnOsAndroid" onclick="setOs('android')">Android</button>
+    </div>
+    <div class="top-btn-group">
+      <span>THEME:</span>
+      <button class="top-btn on" id="btnThemeLight" onclick="setTheme('light')">Day</button>
+      <button class="top-btn" id="btnThemeDark" onclick="setTheme('dark')">Night</button>
+    </div>
+  </div>
+
+  <!-- Header with Live Mesh State -->
+  <header class="header">
+    <div class="logo-title">MESHLiNE</div>
+    <div class="header-chips">
+      <span class="chip ok" id="chipPeers">● 3 peers</span>
+      <span class="chip" id="chipRelay">Relay on</span>
+      <span class="chip" id="chipBatt">Normal (40%)</span>
+    </div>
+  </header>
+
+  <!-- Main Viewports -->
+  <main class="view-container">
+
+    <!-- SCREEN 1: ONBOARDING -->
+    <section class="view" id="viewOnboarding">
+      <div>
+        <div class="k">Before you need it</div>
+        <div class="h">Allow three things</div>
+      </div>
+      <div class="ls">
+        <div>Nearby devices<small>Finds phones around you, no internet or cellular required</small></div>
+        <div>Location<small>Attached to your SOS automatically for rapid discovery</small></div>
+        <div>Critical Alerts<small>Full-screen SOS alerts from people trapped nearby</small></div>
+      </div>
+      <p style="text-align:center;font-size:11.5px;color:var(--mut)">You can change these anytime in Settings</p>
+      <button class="btn" style="margin-top:auto" onclick="showView('viewHome')">Allow and continue</button>
+    </section>
+
+    <!-- SCREEN 2: HOME -->
+    <section class="view active" id="viewHome">
+      <div>
+        <div class="k">Mesh Active</div>
+        <div class="h">MESHLiNE</div>
+      </div>
+      <div class="radar-box">
+        <div class="dot" style="top:28px;left:42px"></div>
+        <div class="dot" style="top:60px;right:32px"></div>
+        <div class="dot" style="bottom:42px;left:64px"></div>
+        <button class="btn-sos" id="btnTriggerSos">
+          SOS
+          <small>Tap · 3 steps</small>
+        </button>
+      </div>
+      <div class="btn-group">
+        <button class="btn s" id="btnImSafe">I’m Safe</button>
+        <button class="btn s" onclick="showView('viewChat')">Broadcast Chat</button>
+      </div>
+      <p style="text-align:center;font-size:11.5px;color:var(--mut);margin-top:auto">
+        Last relay 12s ago · nearest rescuer 2 hops<br>
+        Radar is ambient, not to scale. Store-carry-forward ready.
+      </p>
+    </section>
+
+    <!-- SCREEN 3: TRIAGE STEPPER -->
+    <section class="view" id="viewTriage">
+      <div>
+        <div class="k">Step 2 of 3</div>
+        <div class="h">What is happening?</div>
+      </div>
+      <div class="triage-grid" id="triageGrid">
+        <div class="triage-btn on" data-cat="Medical">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
+          Medical
+        </div>
+        <div class="triage-btn" data-cat="Trapped">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16"/><path d="M4 12h16M12 4v16"/></svg>
+          Trapped
+        </div>
+        <div class="triage-btn" data-cat="Fire">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 2 1 3 2 3-3z"/></svg>
+          Fire
+        </div>
+        <div class="triage-btn" data-cat="Flood">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9c3-3 6 3 9 0s6 3 9 0M3 15c3-3 6 3 9 0s6 3 9 0"/></svg>
+          Flood
+        </div>
+        <div class="triage-btn" data-cat="Danger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l10 18H2z"/><path d="M12 10v5"/></svg>
+          Danger
+        </div>
+        <div class="triage-btn" data-cat="Supplies">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8l8-4 8 4v8l-8 4-8-4z"/></svg>
+          Supplies
+        </div>
+      </div>
+      <div class="k">Severity</div>
+      <div class="seg" id="segSev">
+        <button data-sev="Low">Low</button>
+        <button data-sev="High" class="on cr">High</button>
+        <button data-sev="Critical">Critical</button>
+      </div>
+      <div class="k">People with you</div>
+      <div class="stepper">
+        <span id="stepMinus">−</span>
+        <div id="peopleCount">1</div>
+        <span id="stepPlus">+</span>
+      </div>
+      <div class="header-chips">
+        <span class="chip ok">GPS ±8 m</span>
+        <span class="chip">Battery 40%</span>
+      </div>
+      <button class="btn r" id="btnSendSosFinal" style="margin-top:auto">Send SOS</button>
+      <button class="btn s" onclick="showView('viewHome')">Cancel</button>
+    </section>
+
+    <!-- SCREEN 4: SOS LIFECYCLE & STATUS -->
+    <section class="view" id="viewStatus">
+      <div>
+        <div class="k">Your SOS</div>
+        <div class="h" id="sosHeaderTitle">Help has been alerted</div>
+      </div>
+      <div style="background:#0F1E33;color:#F3EEE3;padding:14px;border-radius:var(--rc)">
+        <b style="font-size:30px;color:#E2B766;display:block" id="statusHops">3 hops</b>
+        <span id="statusReachText">11 phones reached · 2 min ago</span>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item done">Queued<small>Saved on your phone</small></div>
+        <div class="timeline-item done">Relayed<small>Passed through 3 phones</small></div>
+        <div class="timeline-item active" id="stepRescuer">Received by rescuer<small id="rescuerSub">Awaiting signed ACK</small></div>
+        <div class="timeline-item" id="stepDispatched">Dispatched<small>Rescue team en route</small></div>
+        <div class="timeline-item" id="stepResolved">Resolved<small>Safe confirmation</small></div>
+      </div>
+      <button class="btn s" id="btnMarkSafeNow" style="margin-top:auto">I am safe now</button>
+    </section>
+
+    <!-- SCREEN 5: NO PEERS NEARBY (FAILURE STATE) -->
+    <section class="view" id="viewNoPeers">
+      <div>
+        <div class="k">Searching</div>
+        <div class="h">No one nearby</div>
+      </div>
+      <div class="header-chips">
+        <span class="chip">● 0 peers</span>
+        <span class="chip">Relay on</span>
+        <span class="chip">Normal</span>
+      </div>
+      <div class="radar-box">
+        <button class="btn-sos" onclick="showView('viewTriage')">
+          SOS
+          <small>Will queue</small>
+        </button>
+      </div>
+      <p style="text-align:center;font-size:11.5px;color:var(--mut)">
+        Your SOS is saved and sends the moment a phone appears. Keep the app open.
+      </p>
+      <button class="btn r" style="margin-top:auto" onclick="showView('viewTriage')">Queue SOS now</button>
+      <button class="btn s" onclick="showView('viewPermDenied')">Check permissions</button>
+    </section>
+
+    <!-- SCREEN 7: OFFLINE MESH CHAT -->
+    <section class="view" id="viewChat">
+      <div>
+        <div class="k">Mesh Chat</div>
+        <div class="h">Nearby Broadcast</div>
+      </div>
+      <div class="chat-list" id="chatList">
+        <div class="bub">
+          Road blocked at the bridge
+          <small>Asha · 2 hops · <span class="chip ok" style="padding:1px 6px">Signed</span></small>
+        </div>
+        <div class="bub">
+          Water available at the school
+          <small>Unknown · 3 hops · <span class="chip uv" style="padding:1px 6px">Unverified</span></small>
+        </div>
+        <div class="bub me">
+          Safe here, 2 people
+          <small>Delivered</small>
+        </div>
+      </div>
+      <div class="btn-group">
+        <button class="btn s" onclick="sendQuickChat('Need water')">Need water</button>
+        <button class="btn s" onclick="sendQuickChat('Safe here')">Safe here</button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="chatInput" placeholder="Type message..." style="flex:1;padding:10px;border:1px solid var(--line);border-radius:var(--b);background:var(--card);color:var(--ink);font-size:13px">
+        <button class="btn" style="width:auto;padding:10px 18px" onclick="submitCustomChat()">Send</button>
+      </div>
+    </section>
+
+    <!-- SCREEN 8: RESCUER VIEW -->
+    <section class="view" id="viewRescue">
+      <div>
+        <div class="k">Rescuer Mode</div>
+        <div class="h">Ranked Requests</div>
+      </div>
+      <div id="rescuerList" style="display:flex;flex-direction:column;gap:10px"></div>
+      <button class="btn r" id="btnAckTop" style="margin-top:auto">Acknowledge Top Request</button>
+    </section>
+
+    <!-- SCREEN 9: NETWORK HEALTH -->
+    <section class="view" id="viewHealth">
+      <div>
+        <div class="k">Live Mesh</div>
+        <div class="h">Network Health</div>
+      </div>
+      <div class="kp-grid">
+        <div class="kp-card"><b id="statPeers">5</b>peers</div>
+        <div class="kp-card"><b>2.4</b>avg hops</div>
+        <div class="kp-card"><b id="statQueued">12</b>queued</div>
+        <div class="kp-card"><b id="statDeliv">96%</b>delivered</div>
+        <div class="kp-card err"><b id="statBadSig">1</b>bad signature</div>
+        <div class="kp-card err"><b id="statReplays">1</b>replay blocked</div>
+      </div>
+      <div class="k" style="margin-top:6px">Hops per message</div>
+      <div class="bars">
+        <i style="height:30%"></i>
+        <i style="height:75%"></i>
+        <i style="height:100%"></i>
+        <i style="height:55%"></i>
+        <i style="height:20%"></i>
+      </div>
+      <div class="btn-group" style="margin-top:auto">
+        <button class="btn s" id="btnForgeAttack">Inject Forged Packet</button>
+        <button class="btn s" id="btnReplayAttack">Inject Replay Attack</button>
+      </div>
+    </section>
+
+    <!-- SCREEN 10: PERMISSION DENIED (FAILURE STATE) -->
+    <section class="view" id="viewPermDenied">
+      <div>
+        <div class="k">Needs access</div>
+        <div class="h">Nearby devices is off</div>
+      </div>
+      <div class="header-chips">
+        <span class="chip">● 0 peers</span>
+        <span class="chip uv">Relay unavailable</span>
+      </div>
+      <div class="ls">
+        <div>Without it, SOS cannot reach other phones<small>Your SOS is still saved locally on this phone</small></div>
+        <div>Location and Alerts<small>Location allowed · Alerts off</small></div>
+      </div>
+      <button class="btn" style="margin-top:auto" onclick="alert('Settings menu opened. Grant Nearby devices permission to join mesh.')">Open Settings</button>
+      <button class="btn s" onclick="showView('viewHome')">Continue without mesh</button>
+    </section>
+
+    <!-- SCREEN 11: GPS UNAVAILABLE (FAILURE STATE) -->
+    <section class="view" id="viewGpsUnavailable">
+      <div>
+        <div class="k">Step 2 of 3</div>
+        <div class="h">Location not found</div>
+      </div>
+      <div class="header-chips">
+        <span class="chip uv">GPS unavailable</span>
+        <span class="chip">Battery 40%</span>
+      </div>
+      <div class="ls">
+        <div style="cursor:pointer" onclick="selectLandmark('Last known: 4 min ago · 150m')">
+          Use last known location<small>4 min ago · about 150 m away</small>
+        </div>
+        <div style="cursor:pointer" onclick="selectLandmark('Landmark: Central Tower School')">
+          Pick a landmark<small>Central Tower School (No typing needed)</small>
+        </div>
+      </div>
+      <button class="btn r" style="margin-top:auto" onclick="sendSosWithoutGps()">Send SOS without GPS</button>
+      <button class="btn s" onclick="showView('viewTriage')">Back to Triage</button>
+    </section>
+
+    <!-- SCREEN 12: RELAYING STOPPED (FAILURE STATE) -->
+    <section class="view" id="viewRelayStopped">
+      <div>
+        <div class="k">Attention</div>
+        <div class="h">Relaying stopped</div>
+      </div>
+      <div class="header-chips">
+        <span class="chip">0 peers</span>
+        <span class="chip uv">Relay off</span>
+      </div>
+      <div class="ls">
+        <div>The system closed MESHLiNE<small>Messages from others are not being passed on</small></div>
+      </div>
+      <button class="btn r" style="margin-top:auto" onclick="restartRelaying()">Restart relaying</button>
+      <button class="btn s" onclick="alert('Battery optimization disabled for MESHLiNE foreground service.')">Battery settings</button>
+    </section>
+
+    <!-- SCREEN 13: SETTINGS -->
+    <section class="view" id="viewSettings">
+      <div>
+        <div class="k">Preferences</div>
+        <div class="h">Settings</div>
+      </div>
+      <div class="ls">
+        <div>
+          Emergency Relay
+          <small>Forward packets for nearby neighbors</small>
+          <div style="margin-top:8px" class="seg">
+            <button class="on" id="btnRelayOn" onclick="toggleRelay(true)">Enabled</button>
+            <button id="btnRelayOff" onclick="toggleRelay(false)">Disabled</button>
+          </div>
+        </div>
+        <div>
+          Battery Power Mode
+          <small>Conserve battery during long grid outages</small>
+          <div style="margin-top:8px" class="seg">
+            <button class="on" onclick="setPowerMode('Normal')">Normal</button>
+            <button onclick="setPowerMode('Saver')">Saver</button>
+            <button onclick="setPowerMode('Critical')">Critical</button>
+          </div>
+        </div>
+        <div>
+          Emergency Contacts &amp; ID Card
+          <small>Blood group O+, No allergies registered</small>
+        </div>
+      </div>
+      <div class="k" style="margin-top:10px">Simulation &amp; Failure Scenarios</div>
+      <div class="btn-group">
+        <button class="btn s" onclick="showView('viewNoPeers')">Sim No Peers</button>
+        <button class="btn s" onclick="showView('viewRelayStopped')">Sim Relay Stop</button>
+      </div>
+      <div class="btn-group">
+        <button class="btn s" onclick="triggerIncomingAlert(false)">Sim SOS Alert</button>
+        <button class="btn s" onclick="triggerIncomingAlert(true)">Sim Unverified</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- SCREEN 6 / 6b: FULL-SCREEN INCOMING SOS ALERT OVERLAY -->
+  <div class="incoming-modal" id="modalIncomingAlert">
+    <div>
+      <div class="k" style="color:#F3D9A4">SOS nearby</div>
+      <div class="h" style="color:#fff">Medical · Critical</div>
+    </div>
+    <div>
+      <div class="compass-ring">
+        <span style="display:block;transform:rotate(45deg)">
+          <svg width="50" height="50" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l7 18-7-5-7 5z"/></svg>
+        </span>
+      </div>
+      <div class="distance-big">280 m</div>
+      <div id="incomingUnverifiedBadge" style="display:none;justify-content:center;margin-top:6px" class="header-chips">
+        <span class="chip uv" style="color:#fff;border-color:#fff">Unverified</span>
+      </div>
+      <p id="incomingAlertDesc" style="text-align:center;color:#fff;font-size:12px;margin-top:8px">
+        North-east · 2 people · 3 hops · 4 min ago
+      </p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn" style="background:#fff;color:#8E1F18" onclick="viewSosFromAlert()">View details &amp; Navigate</button>
+      <button class="btn s" style="color:#fff;border-color:rgba(255,255,255,0.6)" onclick="closeIncomingAlert()">Dismiss</button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Tabs (Matching Tier 1 specification) -->
+  <nav class="tabs">
+    <button class="tab-btn on" data-target="viewHome">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v9H3z"/></svg>
+      Home
+    </button>
+    <button class="tab-btn" data-target="viewChat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>
+      Chat
+    </button>
+    <button class="tab-btn" data-target="viewRescue">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
+      Rescue
+    </button>
+    <button class="tab-btn" data-target="viewHealth">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+      Health
+    </button>
+    <button class="tab-btn" data-target="viewSettings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </nav>
+</div>
+
+<script src="mesh-engine.js"></script>
+<script>
+// Platform & Theme Switching
+function setOs(os) {
+  document.documentElement.dataset.os = os;
+  document.getElementById('btnOsIos').classList.toggle('on', os === 'ios');
+  document.getElementById('btnOsAndroid').classList.toggle('on', os === 'android');
+}
+function setTheme(th) {
+  document.documentElement.dataset.theme = th;
+  document.getElementById('btnThemeLight').classList.toggle('on', th === 'light');
+  document.getElementById('btnThemeDark').classList.toggle('on', th === 'dark');
+}
+
+// Initial engine & State
+let currentCat = 'Medical';
+let currentSev = 'High';
+let people = 1;
+let currentSos = null;
+const engine = new window.MeshEngine();
+
+// Navigation Tabs
+document.querySelectorAll('.tab-btn').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('on'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    b.classList.add('on');
+    document.getElementById(b.dataset.target).classList.add('active');
+  };
+});
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
+}
+
+// SOS triggers
+document.getElementById('btnTriggerSos').onclick = () => showView('viewTriage');
+
+document.querySelectorAll('.triage-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.triage-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    currentCat = btn.dataset.cat;
+  };
+});
+
+document.querySelectorAll('#segSev button').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('#segSev button').forEach(b => b.classList.remove('on','cr'));
+    btn.classList.add('on','cr');
+    currentSev = btn.dataset.sev;
+  };
+});
+
+document.getElementById('stepMinus').onclick = () => {
+  if (people > 1) { people--; document.getElementById('peopleCount').innerText = people; }
+};
+document.getElementById('stepPlus').onclick = () => {
+  people++; document.getElementById('peopleCount').innerText = people;
+};
+
+// Final SOS Submission
+document.getElementById('btnSendSosFinal').onclick = () => {
+  currentSos = engine.createSos(currentCat, currentSev, people);
+  showView('viewStatus');
+  document.getElementById('sosHeaderTitle').innerText = 'Help has been alerted';
+  document.getElementById('statusHops').innerText = '1 hop';
+  document.getElementById('statusReachText').innerText = 'Nearby phones reached · just now';
+};
+
+// "I am safe now" Confirmation
+document.getElementById('btnMarkSafeNow').onclick = () => {
+  if (currentSos) currentSos.acknowledged = true;
+  showView('viewHome');
+  alert('Marked safe. Your emergency broadcast has been resolved.');
+};
+
+// "I'm Safe" check-in broadcast
+document.getElementById('btnImSafe').onclick = () => {
+  engine.createSos('Safe', 'Low', 1);
+  alert('“I am safe” check-in broadcasted to local mesh neighbors.');
+};
+
+// Rescuer & ACK handling
+function updateRescuerList() {
+  const list = document.getElementById('rescuerList');
+  const sosPackets = engine.messages.filter(m => m.type === 'SOS');
+  if (sosPackets.length === 0) {
+    list.innerHTML = '<p style="color:var(--mut);text-align:center;padding:24px">No active emergency requests in range.</p>';
+    return;
+  }
+  list.innerHTML = sosPackets.map((s, idx) => {
+    // Rescuer priority score: score = severity * w1 + ln(1+people) * w2 ...
+    const sevScore = s.payload.severity === 'Critical' ? 92 : (s.payload.severity === 'High' ? 78 : 54);
+    const badgeCls = sevScore >= 90 ? '' : (sevScore >= 70 ? 'm' : 'l');
+    return `
+      <div class="res-card" onclick="ackItem('${s.msgId}')">
+        <div class="res-score ${badgeCls}">${sevScore}</div>
+        <div>
+          <b style="font-size:13.5px">${s.payload.severity} · ${s.payload.category} · ${s.payload.peopleCount} ${s.payload.peopleCount > 1 ? 'people' : 'person'}</b>
+          <small style="color:var(--mut)">${s.acknowledged ? '✓ Acknowledged' : '280 m · not acknowledged yet'}</small>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+window.ackItem = (id) => {
+  const p = engine.messages.find(m => m.msgId === id);
+  if (p) {
+    engine.acknowledgeSos(p);
+    alert('Request acknowledged! Signed ACK routed back along breadcrumbs.');
+    updateRescuerList();
+  }
+};
+
+document.getElementById('btnAckTop').onclick = () => {
+  const firstUnack = engine.messages.find(m => m.type === 'SOS' && !m.acknowledged);
+  if (firstUnack) {
+    engine.acknowledgeSos(firstUnack);
+    alert('Top emergency request acknowledged! Signed ACK routed back along breadcrumbs.');
+    updateRescuerList();
+  } else {
+    alert('All emergency requests are acknowledged.');
+  }
+};
+
+// Chat functionality
+function sendQuickChat(text) {
+  const chatList = document.getElementById('chatList');
+  const item = document.createElement('div');
+  item.className = 'bub me';
+  item.innerHTML = `${text}<small>Delivered just now</small>`;
+  chatList.appendChild(item);
+  chatList.scrollTop = chatList.scrollHeight;
+}
+function submitCustomChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  sendQuickChat(text);
+  input.value = '';
+}
+
+// Full-screen Alert Overlay Simulation (Screen 6 & 6b)
+function triggerIncomingAlert(isUnverified = false) {
+  const modal = document.getElementById('modalIncomingAlert');
+  const badge = document.getElementById('incomingUnverifiedBadge');
+  const desc = document.getElementById('incomingAlertDesc');
+
+  if (isUnverified) {
+    badge.style.display = 'flex';
+    desc.innerText = 'Received unverified, treat with caution. 2 people · 3 hops · 4 min ago';
+  } else {
+    badge.style.display = 'none';
+    desc.innerText = 'North-east · 2 people · 3 hops · 4 min ago';
+  }
+  modal.classList.add('active');
+}
+function closeIncomingAlert() {
+  document.getElementById('modalIncomingAlert').classList.remove('active');
+}
+function viewSosFromAlert() {
+  closeIncomingAlert();
+  showView('viewRescue');
+}
+
+// GPS fallback
+function selectLandmark(desc) {
+  alert(`Location set: ${desc}`);
+}
+function sendSosWithoutGps() {
+  currentSos = engine.createSos(currentCat, currentSev, people, { latitude: 0, longitude: 0, accuracy: 999 });
+  showView('viewStatus');
+  document.getElementById('sosHeaderTitle').innerText = 'SOS Sent (No GPS)';
+}
+
+// Relay control
+function toggleRelay(enabled) {
+  document.getElementById('btnRelayOn').classList.toggle('on', enabled);
+  document.getElementById('btnRelayOff').classList.toggle('on', !enabled);
+  document.getElementById('chipRelay').innerText = enabled ? 'Relay on' : 'Relay off';
+  document.getElementById('chipRelay').className = enabled ? 'chip' : 'chip uv';
+}
+function restartRelaying() {
+  toggleRelay(true);
+  showView('viewHome');
+  alert('Relaying restarted.');
+}
+function setPowerMode(mode) {
+  document.getElementById('chipBatt').innerText = `${mode} (40%)`;
+  alert(`Power policy set to: ${mode}`);
+}
+
+// Engine event subscriptions
+engine.addListener((ev, data) => {
+  if (ev === 'metric_update') {
+    document.getElementById('statRelayed').innerText = data.relayed;
+    document.getElementById('statBadSig').innerText = data.rejectedBadSig;
+    document.getElementById('statReplays').innerText = data.rejectedReplay;
+    document.getElementById('statQueued').innerText = engine.messages.length;
+  }
+  if (ev === 'ack_received') {
+    if (currentSos && data.payload?.refMsgId === currentSos.msgId) {
+      document.getElementById('stepRescuer').classList.add('done');
+      document.getElementById('rescuerSub').innerText = 'Acknowledged just now by rescuer';
+      document.getElementById('stepDispatched').classList.add('active');
+    }
+  }
+  updateRescuerList();
+});
+
+// Attack injections for live judging presentation
+document.getElementById('btnForgeAttack').onclick = () => {
+  engine.injectForgedAttack();
+};
+document.getElementById('btnReplayAttack').onclick = () => {
+  if (currentSos) engine.injectReplayAttack(currentSos);
+  else alert('Please trigger an SOS first.');
+};
+
+// Initial rescuer populate
+updateRescuerList();
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(console.error);
+}
+</script>
+</body>
+</html>
