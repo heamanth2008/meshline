@@ -1,0 +1,22 @@
+{
+  "name": "meshline-mobile-app",
+  "short_name": "MESHLiNE",
+  "description": "Offline Peer-to-Peer Emergency Mesh Network for iOS & Android",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0F1E33",
+  "theme_color": "#0F1E33",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

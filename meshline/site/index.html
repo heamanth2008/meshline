@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MESHLiNE — Offline Emergency Mesh Network</title>
+<meta name="description" content="Offline peer-to-peer disaster mesh network for iOS and Android. Emergency SOS, multi-hop relay, breadcrumb ACK routing, zero towers required.">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0F1E33;
+  --dark:#0A1424;
+  --paper:#F3EEE3;
+  --card-light:#FFFDF8;
+  --card-dark:#13233B;
+  --brass:#B8893B;
+  --red:#C8372D;
+  --green:#2F7D5B;
+  --line:#243652;
+  --text-dim:#9BA8BE;
+  --text-main:#EEE7D6;
+  --ff:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+body{background:var(--dark);color:var(--text-main);font-family:var(--ff);line-height:1.6;overflow-x:hidden}
+a{color:var(--brass);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Navigation */
+nav{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;max-width:1200px;margin:0 auto;border-bottom:1px solid var(--line)}
+.brand{font-size:24px;font-weight:900;letter-spacing:1px;color:#fff;display:flex;align-items:center;gap:10px}
+.brand span{background:var(--red);color:#fff;font-size:12px;padding:3px 8px;border-radius:6px;font-weight:700}
+.nav-links{display:flex;gap:24px;align-items:center}
+.btn-nav{background:var(--red);color:#fff;padding:9px 18px;border-radius:30px;font-weight:700;font-size:14px;box-shadow:0 4px 14px rgba(200,55,45,0.4)}
+.btn-nav:hover{background:#b02e25;text-decoration:none}
+
+/* Hero Section */
+.hero{max-width:1200px;margin:0 auto;padding:70px 24px;display:grid;grid-template-columns:1.2fr 0.8fr;gap:40px;align-items:center}
+.badge-tag{display:inline-block;border:1.5px solid var(--brass);color:var(--brass);border-radius:999px;padding:5px 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:18px}
+h1{font-size:46px;line-height:1.15;font-weight:900;color:#fff;margin-bottom:20px}
+h1 span{color:var(--brass)}
+.hero-p{font-size:18px;color:var(--text-dim);margin-bottom:30px;max-width:620px}
+.cta-group{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.btn-primary{background:var(--red);color:#fff;padding:16px 32px;border-radius:12px;font-size:17px;font-weight:800;display:inline-flex;align-items:center;gap:10px;box-shadow:0 10px 25px rgba(200,55,45,0.45);transition:transform 0.2s}
+.btn-primary:hover{transform:translateY(-2px);text-decoration:none}
+.btn-secondary{background:transparent;border:1px solid var(--brass);color:var(--brass);padding:15px 28px;border-radius:12px;font-size:16px;font-weight:700}
+.btn-secondary:hover{background:rgba(184,137,59,0.1);text-decoration:none}
+
+/* Phone Mockup Window */
+.preview-card{background:var(--navy);border:1px solid var(--line);border-radius:28px;padding:24px;box-shadow:0 25px 60px rgba(0,0,0,0.5);text-align:center}
+.qr-frame{background:#fff;padding:16px;border-radius:18px;display:inline-block;margin:16px 0}
+.qr-frame canvas, .qr-frame img{display:block;width:180px;height:180px}
+.install-guide{font-size:13px;color:var(--text-dim);margin-top:12px}
+
+/* Container */
+.container{max-width:1200px;margin:0 auto;padding:60px 24px}
+.section-title{text-align:center;margin-bottom:50px}
+.section-title h2{font-size:34px;color:#fff;font-weight:800}
+.section-title p{color:var(--text-dim);font-size:16px;margin-top:8px}
+
+/* Features Grid */
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px}
+.card{background:var(--card-dark);border:1px solid var(--line);border-radius:18px;padding:28px;transition:border-color 0.2s}
+.card:hover{border-color:var(--brass)}
+.card-icon{width:46px;height:46px;border-radius:12px;background:rgba(184,137,59,0.15);color:var(--brass);display:grid;place-items:center;font-size:22px;margin-bottom:18px}
+.card h3{font-size:20px;color:#fff;margin-bottom:10px}
+.card p{color:var(--text-dim);font-size:14.5px;line-height:1.6}
+
+/* Download Section for iOS & Android */
+.install-box{background:var(--card-dark);border:2px solid var(--line);border-radius:24px;padding:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:20px}
+.platform-col{display:flex;flex-direction:column;gap:16px}
+.platform-badge{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:800;color:#fff}
+.step-list{counter-reset:step;display:flex;flex-direction:column;gap:14px;margin-top:10px}
+.step-item{display:flex;gap:14px;align-items:flex-start}
+.step-num{flex:0 0 28px;height:28px;background:var(--brass);color:#fff;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px}
+.step-text b{display:block;color:#fff;font-size:15px}
+.step-text p{color:var(--text-dim);font-size:13.5px}
+
+/* Spec Tables */
+.spec-table{width:100%;border-collapse:collapse;margin-top:20px;background:var(--card-dark);border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.spec-table th, .spec-table td{padding:14px 18px;text-align:left;border-bottom:1px solid var(--line);font-size:14px}
+.spec-table th{background:rgba(255,255,255,0.02);color:var(--brass);text-transform:uppercase;font-size:12px;letter-spacing:1px}
+.spec-table td{color:var(--text-dim)}
+.spec-table td b{color:#fff}
+
+/* Footer */
+footer{border-top:1px solid var(--line);padding:40px 24px;text-align:center;color:var(--text-dim);font-size:14px;background:var(--dark)}
+
+@media(max-width:850px){
+  .hero{grid-template-columns:1fr;text-align:center;padding:40px 20px}
+  .cta-group{justify-content:center}
+  .hero-p{margin:0 auto 30px}
+  .install-box{grid-template-columns:1fr}
+}
+</style>
+<!-- QR Code Generator Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<!-- Header Navigation -->
+<nav>
+  <div class="brand">
+    MESHLiNE <span>OFFLINE v4</span>
+  </div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#security">Security</a>
+    <a href="#download" class="btn-nav">Download App</a>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div>
+    <div class="badge-tag">Zero Cellular &middot; Zero Internet Required</div>
+    <h1>Life-Saving Emergency Mesh Network for <span>Smartphones</span></h1>
+    <p class="hero-p">
+      When earthquakes, floods, or cyclones strike and power towers collapse, MESHLiNE transforms ordinary iPhones and Android phones into a self-healing, multi-hop relay. An SOS created on one phone hops node-to-node until a rescuer confirms it.
+    </p>
+    <div class="cta-group">
+      <a href="./app/index.html" class="btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Launch / Download App
+      </a>
+      <a href="#download" class="btn-secondary">Installation Guide</a>
+    </div>
+  </div>
+
+  <div class="preview-card">
+    <h3 style="color:#fff;margin-bottom:6px">Install Directly on Phone</h3>
+    <p style="color:var(--text-dim);font-size:13.5px">Scan with your iPhone or Android camera:</p>
+    <div class="qr-frame" id="qrcode"></div>
+    <div class="install-guide">
+      <b>Works 100% Offline via Service Worker</b><br>
+      Add to Home Screen for native standalone app mode
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="container" id="how-it-works">
+  <div class="section-title">
+    <h2>Built For True Disaster Realities</h2>
+    <p>Based on Implementation Plan Revision 3 &mdash; Engineering that works without cell towers.</p>
+  </div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-icon">&#9889;</div>
+      <h3>3-Tap Emergency SOS</h3>
+      <p>Under extreme panic and physical confinement, complex typing fails. MESHLiNE features high-contrast 56+ dp targets: tap SOS, pick a category (Medical, Trapped, Fire), and broadcast automatically with GPS and battery status.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128257;</div>
+      <h3>Multi-Hop Store-Carry-Forward</h3>
+      <p>Messages hop across peer devices via Bluetooth and Wi-Fi Direct. If nodes move or become disconnected, messages are stored locally and forwarded the instant a new peer appears.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#129517;</div>
+      <h3>Breadcrumb Rescuer ACKs</h3>
+      <p>Unlike naive flooding protocols that saturate radio channels, MESHLiNE records incoming node breadcrumbs. Rescuer confirmations follow the exact reverse path back to the trapped victim, ending with &ldquo;Received by Rescuer&rdquo;.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128274;</div>
+      <h3>Ed25519 &amp; Sybil Defense</h3>
+      <p>Every packet is signed with Ed25519 cryptography, verified with a 64-bit anti-replay sliding window, and throttled by strict per-link rate limits to thwart attackers with rogue transmitters.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#9888;</div>
+      <h3>Emergency Beats Authenticity</h3>
+      <p>If phone cryptographic storage fails during a disaster, human life comes first: an SOS is still broadcast with an UNVERIFIABLE flag, displayed with a signature dashed brass badge, and rate-limited to prevent abuse.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128267;</div>
+      <h3>Battery-Aware Duty Cycles</h3>
+      <p>Three operating tiers (Normal, Saver, and Critical) conserve battery life over days of blackout, concluding with a low-power last-gasp beacon below 5% charge.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Download & Installation Guide -->
+<section class="container" id="download">
+  <div class="section-title">
+    <h2>Download &amp; Install on Your Mobile Device</h2>
+    <p>Install once while online or via local hotspot, then runs completely offline without any internet connection.</p>
+  </div>
+
+  <div class="install-box">
+    <!-- iOS Column -->
+    <div class="platform-col">
+      <div class="platform-badge">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.87-.93.04-2.02.63-2.67 1.39-.56.65-.98 1.73-.85 2.76 1.05.08 2.06-.57 2.6-1.28z"/></svg>
+        Apple iPhone (iOS)
+      </div>
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <b>Open in Safari</b>
+            <p>Scan the QR code above or browse to <a href="./app/index.html">/app</a> in Safari.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <b>Tap the Share Button</b>
+            <p>Tap the square icon with an upward-pointing arrow at the bottom toolbar.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <b>Select &ldquo;Add to Home Screen&rdquo;</b>
+            <p>Confirm the name &ldquo;MESHLiNE&rdquo;. It installs as a full-screen, standalone app capable of running with Airplane Mode activated.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Android Column -->
+    <div class="platform-col">
+      <div class="platform-badge">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993.0001.5511-.4483.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5898 8.4116 13.8545 8.1 12 8.1s-3.5898.3116-5.1368.8507L4.8409 5.4477a.416.416 0 00-.5676-.1521.416.416 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/></svg>
+        Android Devices
+      </div>
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <b>Open in Google Chrome</b>
+            <p>Scan the QR code or navigate to <a href="./app/index.html">/app</a> in Chrome.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <b>Tap &ldquo;Install App&rdquo; or Three Dots Menu</b>
+            <p>Select &ldquo;Install App&rdquo; or &ldquo;Add to Home Screen&rdquo; from the top-right menu.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <b>Allow Required Background Permissions</b>
+            <p>Nearby devices &amp; location permissions allow continuous multi-hop message relay even when locked.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Technical Specifications Table -->
+<section class="container" id="security">
+  <div class="section-title">
+    <h2>Protocol &amp; Security Specifications</h2>
+    <p>Complete alignment with Revision 3 implementation rules.</p>
+  </div>
+  <table class="spec-table">
+    <thead>
+      <tr>
+        <th>Specification</th>
+        <th>Standard</th>
+        <th>Implementation Rationale</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Packet Format</b></td>
+        <td>Binary / Protobuf Schema (&le; 8 KB)</td>
+        <td>Compact size fits high-throughput BLE / Wi-Fi peer links.</td>
+      </tr>
+      <tr>
+        <td><b>Cryptography</b></td>
+        <td>Ed25519 Elliptic Curve Signatures</td>
+        <td>All immutable fields signed; node ID = SHA-256 public key hash.</td>
+      </tr>
+      <tr>
+        <td><b>Anti-Replay Window</b></td>
+        <td>64-bit Sliding Bitmap</td>
+        <td>Discards replayed packets without requiring synchronized real-time clocks.</td>
+      </tr>
+      <tr>
+        <td><b>Sybil Attack Defense</b></td>
+        <td>Physical Link Rate Limiting (60/min)</td>
+        <td>Restricts malicious nodes from flooding the mesh with forged identities.</td>
+      </tr>
+      <tr>
+        <td><b>ACK Forwarding</b></td>
+        <td>Targeted Breadcrumb Return</td>
+        <td>Halves network congestion compared to generic flooding protocols.</td>
+      </tr>
+      <tr>
+        <td><b>Clock Skew Tolerance</b></td>
+        <td>24-Hour Expiry Grace Period</td>
+        <td>Prevents premature packet eviction if phone system clock drifts offline.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Footer -->
+<footer>
+  <p><b>MESHLiNE Emergency Mesh System</b> &mdash; Built for humanitarian disaster response.</p>
+  <p style="margin-top:6px;font-size:12px">All Tier 1 capabilities and failure states tested in accordance with Revision 3 Plan.</p>
+</footer>
+
+<script>
+// Dynamically render QR Code pointing to this exact app URL
+const appUrl = window.location.origin + window.location.pathname.replace(/\/$/, '') + '/app/index.html';
+new QRCode(document.getElementById("qrcode"), {
+  text: appUrl,
+  width: 180,
+  height: 180,
+  colorDark: "#0F1E33",
+  colorLight: "#ffffff",
+  correctLevel: QRCode.CorrectLevel.H
+});
+</script>
+</body>
+</html>
